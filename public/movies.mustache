@@ -7,8 +7,13 @@
     <title>Document</title>
 </head>
 <body>
+
+ <h1>Movies in the Database</h1>
+  <a href="/addmovie">Add a movie</a>
+
     {{#data}}
-    <div class = "table">
+   
+    <div class = "table"><a href ="/addmovie/{{_id}}">Edit Movie Info</a>
     {{title}}
     {{genre}}
     {{releaseYr}}

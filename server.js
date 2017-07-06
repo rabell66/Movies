@@ -24,7 +24,7 @@ app.engine("mustache", mustacheExpress());
 app.set("views", "./public");
 app.set("view engine", "mustache");
 
-app.use(express.static("views"));
+app.use(express.static("./public"));
 
 app.get("/", (req,res)=>{
     res.redirect("/movies")
@@ -39,54 +39,69 @@ app.get("/movies", (req, res)=>{
     });
 });
 
-app.get("/movies/:id", (req,res)=>{
-     Movie.findOne({_id: req.params.id}).then(foundmovies=>{
-         console.log("Year Made:", foundMovies.yearMade)//looking at the virtual field from Movies.js
-        foundMovie.shoot()//calls the method created in Arrowhead.js
-        res.send(foundmovies);
+app.get("/addmovie",(req,res)=>{
+    res.render("addmovie")
+})
+//adding a new movie\\
+app.post("/addmovie", (req,res)=>{
+    var obj = {
+        title: req.body.title,   
+    director: req.body.director,
+    genre: req.body.genre,
+    releaseYr: req.body.releaseYr,   
+    filmLocation:{
+        country:req.body.country,
+        state_province:req.body.state_province
+        },
+        actor:req.body.actor
+}  
+    let newMovie = new Movie(obj)
+     newMovie
+    .save()
+    .then(savedMovie => {
+      res.redirect("/");
+    })
+    .catch(err => {
+      res.status(500).send(err);
+    });
+    
+})
+
+app.get("/addmovie/:id", (req,res)=>{
+     Movie.findOne({_id: req.params.id}).then(foundmovie=>{
+        
+        res.render("addmovie", {info:foundmovie});
     })
     .catch(err=>{
         res.status(500).send(err);
     });
 });
 
-app.post("/movies", (req, res) => {
-  let movieData = req.body;
-  let newMovie = new Movie(movieData);
-  console.log("newMovie: ", newMovie);
-  newMovie
-    .save()
-    .then(savedMovie => {
-      console.log("savedMovie: ", savedMovie);
-      //only one param dont need ()
-      res.send(savedMovie);
-    })
-    .catch(err => {
-      res.status(500).send(err);
-    });
-});
 
-app.get("/addmovie", (req, res)=>{
-    res.render("addmovie")
-})
-app.post("/addmovie", (req,res)=>{
-    
-})
-
-app.get("/updatemovie", (req,res)=>{
-    res.render("addmovie", {update:true})
-})
-
-app.put("/movies/:id", (req,res)=>{
-    Movie.updateOne({_id:req.params.id},req.body)//takes two objects..the query where to update and what to update
-.then(updatedMovie=>{
-    res.send(updatedMovie);
+app.post("/editmovies/:id", (req,res)=>{
+   
+     var obj = {
+        title: req.body.title,   
+    director: req.body.director,
+    genre: req.body.genre,
+    releaseYr: req.body.releaseYr,   
+    filmLocation:{
+        country:req.body.country,
+        state_province:req.body.state_province
+        },
+        actor:req.body.actor
+}  
+console.log(req.params.id)
+Movie.updateOne({_id:req.params.id},obj)//takes two objects..the query where to update and what to update
+.then(()=>{
+    res.redirect("/movies");
 }).catch(err=>{ res.status(500).send(err);})
 })
-app.delete("/movies/:id", (req,res)=>{
+
+app.get("/delete/:id", (req,res)=>{
     Movie.deleteOne({_id: req.params.id})
     .then(()=> {
-        res.send("deleted record");
+        res.redirect("/movies");
     })
     .catch(err =>{
         res.status(500).send(err);
